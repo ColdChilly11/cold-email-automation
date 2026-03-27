@@ -1,0 +1,30 @@
+# Credentials & tokens — never commit these
+credentials.json
+token.json
+token_old.json
+
+# Contact CSVs — personal data
+*.csv
+
+# Resume folder — personal documents
+Job Ress/
+
+# Apollo exported lists
+Apollo Lists/
+
+# Tracked mailed lists
+Mailed/
+First follow up/
+Wil do/
+
+# Large installer files
+get-pip.py
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# OS files
+.DS_Store
+Thumbs.db
