@@ -1,3 +1,6 @@
+# PDFs — resumes and documents
+*.pdf
+
 # Credentials & tokens — never commit these
 credentials.json
 token.json
