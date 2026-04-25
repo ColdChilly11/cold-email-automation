@@ -4,78 +4,91 @@ import time
 import re
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from email.mime.application import MIMEApplication  # <-- Added for PDF attachment
+from email.mime.application import MIMEApplication
 import os
 
-# Read your CSV
-df = pd.read_csv(r'C:\Users\pc\OneDrive\Desktop\Mailer\Mailed\1st September.csv')  # Columns: Name, Mail, Company
+# ─────────────────────────────────────────────
+# CONFIGURATION — Update these before running
+# ─────────────────────────────────────────────
 
-# Your Gmail credentials
-your_email = "abhiabhii9001jk@gmail.com" #add your email here
-your_app_password = "kjcz wbbl hmei muls" #generate your app password and add here
+CSV_PATH = r'C:\Users\YourName\...\Mailer\YourContactList.csv'  # Path to your contacts CSV (columns: Name, Mail, Company)
+YOUR_EMAIL = "youremail@gmail.com"                               # Your Gmail address
+YOUR_APP_PASSWORD = ""                                           # Your Gmail App Password (see SETUP.md Step A)
+PDF_PATH = r'C:\Users\YourName\...\Mailer\Your_Resume.pdf'      # Path to your resume PDF (leave empty string to skip)
 
-# Email validation function
+# Subject line — {company} will be replaced with the recipient's company name
+# 💡 TIP: Keep {company} in the subject — personalised subjects are less likely to be flagged as spam
+EMAIL_SUBJECT = "Requesting opportunity at {company}"
+
+# ─────────────────────────────────────────────
+# EMAIL BODY TEMPLATE
+# Available placeholders: {name}, {company}
+# ─────────────────────────────────────────────
+
+EMAIL_BODY = """Hi {name},
+
+My name is [Your Name] and I am a [your background, e.g. recent graduate from XYZ University]. I am currently seeking [role, e.g. entry-level APM / Product Analyst / Growth] opportunities.
+
+My experience has been impactful and I'd love to bring the same energy to {company}:
+
+- [Experience 1 — e.g. Product Intern at Company X working on Y]
+- [Experience 2 — e.g. PM Intern at Company Z building products for ...]
+- [Experience 3 — e.g. Research project / internship / achievement]
+- [Experience 4 — add or remove bullet points as needed]
+
+Thank you so much, and please let me know if you have any questions or if you'd like to look at my resume. Looking forward to an opportunity.
+
+Sincerely,
+[Your Name]
+
+[Your portfolio/LinkedIn URL]
+Find my resume attached below:
+"""
+
+# ─────────────────────────────────────────────
+# DO NOT EDIT BELOW THIS LINE
+# ─────────────────────────────────────────────
+
 def is_valid_email(email):
     regex = r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
     return re.match(regex, email)
 
-# Setup SMTP connection
+df = pd.read_csv(CSV_PATH)
+
 server = smtplib.SMTP("smtp.gmail.com", 587)
 server.starttls()
-server.login(your_email, your_app_password)
+server.login(YOUR_EMAIL, YOUR_APP_PASSWORD)
 
-# Loop through each row and send mail
 for index, row in df.iterrows():
     recipient = row["Mail"]
 
     if not is_valid_email(recipient):
         print(f"❌ Skipped invalid email: {recipient}")
-        continue  # skip to next email
+        continue
 
     msg = MIMEMultipart()
-    msg["From"] = your_email
+    msg["From"] = YOUR_EMAIL
     msg["To"] = recipient
-    msg["Subject"] = f"IIT Bombay | PM @ Fi Money | ex-Gupshup, UC (Requesting opportunity at {row['Company']})"
+    msg["Subject"] = EMAIL_SUBJECT.format(company=row['Company'])
 
-    body = f"""Hi {row['Name']},
-
-My name is Abhijeet and I am a recent graduate from IIT Bombay. I am currently seeking an entry-level job opportunities as APM, Product Analyst or Growth roles.
-
-My experience at different places has been nothing short of impactful and want to do the same at {row['Company']}:
-
-- Currently a Product Intern at Fi Money in the User Risk Team where I am actively working on AI and LLM-based models, focusing on improving internal products, heavy data analysis, LLM prompt and context design, evaluation, and understanding model behavior.
-- Completed 1 year of Product Management intern at Gupshup building products for clients worldwide in the Bot Studio and Journey Builder Team
-- Did a remote research project on customer centricity and marketing at Solvay Brussels School
-- Completed 2.5 months on-site internship as data analyst under BDA profile at Urban Company in Mumbai Salon Division
-- Came 1st in Product Challenge at PM School and have participated in various others
-
-Thank you so much, and please let me know if you have any questions or if you'd like to look at my resume. Looking forward to an opportunity.
-
-Sincerely,
-Abhijeet Choudhary
-
-My portfolio website for virtual handshake – https://abhijeetchoudhary.super.site/
-Find my resume attached below:
-"""
+    body = EMAIL_BODY.format(name=row['Name'], company=row['Company'])
     msg.attach(MIMEText(body, "plain"))
 
-    # Attach PDF (common for all or customize per recipient)
-    pdf_path = r"C:\Users\pc\OneDrive\Desktop\Mailer\Job Ress\Abhijeet_Choudhary_Resume.pdf"  # Change if needed
-    if os.path.exists(pdf_path):
-        with open(pdf_path, "rb") as f:
+    if PDF_PATH and os.path.exists(PDF_PATH):
+        with open(PDF_PATH, "rb") as f:
             part = MIMEApplication(f.read(), _subtype="pdf")
-            part.add_header('Content-Disposition', 'attachment', filename=os.path.basename(pdf_path))
+            part.add_header('Content-Disposition', 'attachment', filename=os.path.basename(PDF_PATH))
             msg.attach(part)
+    elif PDF_PATH:
+        print(f"⚠️  Resume PDF not found at: {PDF_PATH}")
 
     try:
-        server.sendmail(your_email, recipient, msg.as_string())
+        server.sendmail(YOUR_EMAIL, recipient, msg.as_string())
         print(f"✅ Sent to {recipient}")
     except Exception as e:
         print(f"❌ Failed to send to {recipient}: {e}")
 
-    time.sleep(4)  # ⏳ Delay between mails
+    time.sleep(4)  # ⏳ Delay between emails — keep at 4+ seconds to avoid rate limits
 
 server.quit()
-
-# https://tinyurl.com/abhijeet03
-#kjcz wbbl hmei muls
+print("✅ All done.")

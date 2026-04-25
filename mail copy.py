@@ -11,16 +11,18 @@ import os
 # CONFIGURATION — Update these before running
 # ─────────────────────────────────────────────
 
-CSV_PATH = r'C:\Users\YourName\...\Mailer\Apollo Lists\YourFile.csv'  # Path to your contacts CSV
-YOUR_EMAIL = "youremail@gmail.com"                                     # Your Gmail address
-YOUR_APP_PASSWORD = ""                                                  # Your Gmail App Password (see SETUP.md Step A)
-PDF_PATH = r'C:\Users\YourName\...\Mailer\Job Ress\Your_Resume.pdf'   # Path to your resume PDF
+CSV_PATH = r'C:\Users\YourName\...\Mailer\YourContactList.csv'  # Path to your contacts CSV (columns: Name, Mail, Company)
+YOUR_EMAIL = "youremail@gmail.com"                               # Your Gmail address
+YOUR_APP_PASSWORD = ""                                           # Your Gmail App Password (see SETUP.md Step A)
+PDF_PATH = r'C:\Users\YourName\...\Mailer\Your_Resume.pdf'      # Path to your resume PDF (leave empty string to skip)
 
-EMAIL_SUBJECT = "Requesting opportunity at {company}"                  # Customize your subject line
+# Subject line — {company} will be replaced with the recipient's company name
+# 💡 TIP: Keep {company} in the subject — personalised subjects are less likely to be flagged as spam
+EMAIL_SUBJECT = "Requesting opportunity at {company}"
 
 # ─────────────────────────────────────────────
 # EMAIL BODY TEMPLATE
-# Use {name} and {company} as placeholders
+# Available placeholders: {name}, {company}
 # ─────────────────────────────────────────────
 
 EMAIL_BODY = """Hi {name},
@@ -64,12 +66,12 @@ for index, row in df.iterrows():
     body = EMAIL_BODY.format(name=row['Name'], company=row['Company'])
     msg.attach(MIMEText(body, "plain"))
 
-    if os.path.exists(PDF_PATH):
+    if PDF_PATH and os.path.exists(PDF_PATH):
         with open(PDF_PATH, "rb") as f:
             part = MIMEApplication(f.read(), _subtype="pdf")
             part.add_header('Content-Disposition', 'attachment', filename=os.path.basename(PDF_PATH))
             msg.attach(part)
-    else:
+    elif PDF_PATH:
         print(f"⚠️  Resume PDF not found at: {PDF_PATH}")
 
     try:
@@ -78,7 +80,7 @@ for index, row in df.iterrows():
     except Exception as e:
         print(f"❌ Failed to send to {recipient}: {e}")
 
-    time.sleep(4)  # ⏳ Delay between emails — keep at 4+ seconds
+    time.sleep(4)  # ⏳ Delay between emails — keep at 4+ seconds to avoid rate limits
 
 server.quit()
 print("✅ All done.")

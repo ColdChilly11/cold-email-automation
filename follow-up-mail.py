@@ -11,14 +11,14 @@ from googleapiclient.discovery import build
 
 # --------------------- CONFIGURATION ---------------------
 
-CSV_FILE_PATH = r'C:\Users\pc\OneDrive\Desktop\Mailer\First follow up\29 Aug + 1st Sep.csv'  # Your CSV file with Name, Email, Company
+CSV_FILE_PATH = r'path\to\your\YourFollowUpList.csv'  # Your CSV file with Name, Mail, Company
 
 FOLLOW_UP_BODY = """Hi {{Name}}, 
 
-Just gently following up on my earlier email regarding opportunity at {{Company}}. I’d love to hear your thoughts when you have a moment.
+Just gently following up on my earlier email regarding the opportunity at {{Company}}. I’d love to hear your thoughts when you have a moment.
 
 Regards, 
-Abhijeet
+[Your Name]
 """
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
